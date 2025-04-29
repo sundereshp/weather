@@ -13,6 +13,7 @@ interface WeatherDetailsProps {
   sunset: string;
 }
 
+
 const WeatherDetails = ({
   humidity,
   wind,
@@ -20,7 +21,7 @@ const WeatherDetails = ({
   pressure,
   uvIndex,
   sunrise,
-  sunset
+  sunset,
 }: WeatherDetailsProps) => {
   return (
     <div className="mt-8">

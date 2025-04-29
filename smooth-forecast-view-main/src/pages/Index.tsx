@@ -6,9 +6,7 @@ import CurrentWeather from '@/components/CurrentWeather';
 import WeatherForecast from '@/components/WeatherForecast';
 import WeatherDetails from '@/components/WeatherDetails';
 import WeatherBackground from '@/components/WeatherBackground';
-import { mockWeatherData } from '@/data/mockWeatherData';
 
-// List of available cities
 const AVAILABLE_CITIES = [
   "Chennai",
   "Mumbai",
@@ -17,7 +15,7 @@ const AVAILABLE_CITIES = [
 ];
 
 const Index = () => {
-  const [weatherData, setWeatherData] = useState(mockWeatherData["Chennai"]);
+  const [weatherData, setWeatherData] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestedCities, setSuggestedCities] = useState<string[]>([]);
 
@@ -27,17 +25,37 @@ const Index = () => {
       description: "View current weather and forecasts for your location.",
       duration: 5000
     });
+
+    // Load default city
+    handleSearch("Chennai");
   }, []);
 
-  const handleSearch = (location: string) => {
-    // Update the weather data for the selected city
-    const cityData = mockWeatherData[location];
-    if (cityData) {
-      setWeatherData(cityData);
+  const handleSearch = async (location: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/search?city=${location}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setWeatherData(data);
+        toast({
+          title: "Weather Loaded",
+          description: `Weather data loaded for ${location}`,
+          duration: 3000
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to fetch weather",
+          duration: 3000,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Location updated",
-        description: `Weather data loaded for ${location}`,
-        duration: 3000
+        title: "Network Error",
+        description: "Could not connect to the weather server.",
+        duration: 3000,
+        variant: "destructive"
       });
     }
   };
@@ -46,7 +64,6 @@ const Index = () => {
     const query = e.target.value;
     setSearchQuery(query);
 
-    // Filter cities based on the search query
     const suggestions = AVAILABLE_CITIES.filter(city =>
       city.toLowerCase().includes(query.toLowerCase())
     );
@@ -55,8 +72,8 @@ const Index = () => {
 
   const handleSuggestionClick = (city: string) => {
     setSearchQuery(city);
+    setSuggestedCities([]);
     handleSearch(city);
-    setSuggestedCities([]); // Clear suggestions after selection
   };
 
   return (
@@ -65,29 +82,44 @@ const Index = () => {
 
       <div className="container mx-auto px-4 py-6 max-w-6xl relative z-10">
         <Header
-          onSearch={handleSearch}
-          onInputChange={handleInputChange}
           suggestedCities={suggestedCities}
           onSuggestionClick={handleSuggestionClick}
+          setWeatherData={setWeatherData}
         />
 
+        <div className="mt-6">
+          {weatherData && (
+            <>
+              <CurrentWeather
+                location={weatherData.city_name}
+                temperature={weatherData.temperature}
+                condition={weatherData.condition_description}
+                high={weatherData.temperature + 2}
+                low={weatherData.temperature - 2}
+                humidity={weatherData.humidity}
+                wind={weatherData.wind_speed}
+                feelsLike={weatherData.feels_like}
+              />
 
-        <>
-          <div className="mt-6">
-            <CurrentWeather
-              location={weatherData.current.location}
-              temperature={weatherData.current.temperature}
-              condition={weatherData.current.condition}
-              high={weatherData.current.high}
-              low={weatherData.current.low}
-              humidity={weatherData.current.humidity}
-              wind={weatherData.current.wind}
-              feelsLike={weatherData.current.feelsLike}
-            />
-          </div>
+              <WeatherDetails
+                humidity={weatherData.humidity}
+                wind={weatherData.wind_speed}
+                visibility={weatherData.visibility}
+                pressure={weatherData.pressure}
+                uvIndex={weatherData.uvIndex}
+                sunrise={weatherData.sunrise}
+                sunset={weatherData.sunset}
+              />
+            </>
+          )}
+        </div>
 
+        {/* Future: Add these when backend supports it */}
+        {/* {weatherData?.forecast && (
           <WeatherForecast forecasts={weatherData.forecast} />
+        )}
 
+        {weatherData?.current && (
           <WeatherDetails
             humidity={weatherData.current.humidity}
             wind={weatherData.current.wind}
@@ -97,7 +129,7 @@ const Index = () => {
             sunrise={weatherData.current.sunrise}
             sunset={weatherData.current.sunset}
           />
-        </>
+        )} */}
       </div>
     </>
   );

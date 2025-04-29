@@ -4,25 +4,30 @@ import { Input } from '@/components/ui/input';
 import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
-  onSearch: (location: string) => void;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   suggestedCities: string[];
   onSuggestionClick: (city: string) => void;
+  setWeatherData: (data: any) => void; // <-- to store weather response
 }
 
-const Header = ({ onSearch, onInputChange, suggestedCities, onSuggestionClick }: HeaderProps) => {
+const Header = ({ suggestedCities, onSuggestionClick, setWeatherData }: HeaderProps) => {
   const [searchValue, setSearchValue] = React.useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (searchValue.trim()) {
-      onSearch(searchValue);
+      try {
+        const res = await fetch(`http://localhost:5000/search?city=${searchValue}`);
+        const data = await res.json();
+        console.log('Weather data:', data);
+        setWeatherData(data); // Update weather info on your page
+      } catch (error) {
+        console.error('Error fetching weather:', error);
+      }
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
-    onInputChange(e);
   };
 
   return (
@@ -59,7 +64,11 @@ const Header = ({ onSearch, onInputChange, suggestedCities, onSuggestionClick }:
             {suggestedCities.map((city) => (
               <li
                 key={city}
-                onClick={() => onSuggestionClick(city)}
+                onClick={() => {
+                  setSearchValue(city);
+                  onSuggestionClick(city); // you can trigger the same fetch logic here
+                  handleSubmit({ preventDefault: () => { } } as React.FormEvent);
+                }}
                 className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 {city}
