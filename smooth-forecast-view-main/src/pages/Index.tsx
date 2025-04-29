@@ -88,7 +88,7 @@ const Index = () => {
         />
 
         <div className="mt-6">
-          {weatherData && (
+          {weatherData && weatherData.forecast && (
             <>
               <CurrentWeather
                 location={weatherData.city_name}
@@ -110,26 +110,11 @@ const Index = () => {
                 sunrise={weatherData.sunrise}
                 sunset={weatherData.sunset}
               />
+
+              <WeatherForecast forecasts={weatherData.forecast} />
             </>
           )}
         </div>
-
-        {/* Future: Add these when backend supports it */}
-        {/* {weatherData?.forecast && (
-          <WeatherForecast forecasts={weatherData.forecast} />
-        )}
-
-        {weatherData?.current && (
-          <WeatherDetails
-            humidity={weatherData.current.humidity}
-            wind={weatherData.current.wind}
-            visibility={weatherData.current.visibility}
-            pressure={weatherData.current.pressure}
-            uvIndex={weatherData.current.uvIndex}
-            sunrise={weatherData.current.sunrise}
-            sunset={weatherData.current.sunset}
-          />
-        )} */}
       </div>
     </>
   );

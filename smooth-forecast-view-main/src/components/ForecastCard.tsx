@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Cloud, CloudRain, CloudSnow, Sun } from 'lucide-react';
 
@@ -12,16 +11,15 @@ interface ForecastCardProps {
 
 const ForecastCard = ({ day, high, low, condition, precipitation }: ForecastCardProps) => {
   const getWeatherIcon = () => {
-    switch (condition.toLowerCase()) {
-      case 'rain':
-        return <CloudRain className="w-10 h-10 text-weather-blue" />;
-      case 'snow':
-        return <CloudSnow className="w-10 h-10 text-weather-blue" />;
-      case 'sunny':
-        return <Sun className="w-10 h-10 text-yellow-500" />;
-      case 'cloudy':
-      default:
-        return <Cloud className="w-10 h-10 text-weather-blue" />;
+    const conditionLower = condition.toLowerCase();
+    if (conditionLower.includes('rain')) {
+      return <CloudRain className="w-10 h-10 text-weather-blue" />;
+    } else if (conditionLower.includes('snow')) {
+      return <CloudSnow className="w-10 h-10 text-weather-blue" />;
+    } else if (conditionLower.includes('clear') || conditionLower.includes('sun')) {
+      return <Sun className="w-10 h-10 text-yellow-500" />;
+    } else {
+      return <Cloud className="w-10 h-10 text-weather-blue" />;
     }
   };
 
